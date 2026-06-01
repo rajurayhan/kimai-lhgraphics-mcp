@@ -48,7 +48,88 @@ npm start
 
 This mode is intended for MCP hosts (Cursor, Claude Desktop, etc.) that spawn the process and talk over stdin/stdout. Running it alone in a terminal will appear idle; that is expected.
 
-## Cursor
+## Team-wide shared server (HTTP)
+
+For a **single deployed instance** the whole team connects to from Cursor, run the HTTP transport:
+
+```bash
+npm run build
+npm run start:http
+```
+
+Or with Docker:
+
+```bash
+cp .env.example .env   # set KIMAI_BASE_URL and MCP_SHARED_SECRET
+docker compose up -d --build
+```
+
+### Server environment
+
+| Variable | Description |
+|----------|-------------|
+| `KIMAI_BASE_URL` | Your Kimai instance URL (required) |
+| `MCP_SHARED_SECRET` | Team gate — clients send `Authorization: Bearer <secret>` |
+| `MCP_HOST` | Bind address (default `0.0.0.0`) |
+| `MCP_PORT` | Port (default `3000`) |
+| `MCP_PATH` | MCP endpoint path (default `/mcp`) |
+| `MCP_ALLOWED_HOSTS` | Comma-separated allowed `Host` header values |
+
+Put the service behind **HTTPS** (nginx, Caddy, Cloudflare Tunnel). Example health check: `GET /health`.
+
+### Per-user Kimai identity
+
+Each team member still uses **their own Kimai API token**. The shared server forwards credentials from request headers on session init:
+
+| Header | Value |
+|--------|-------|
+| `Authorization` | `Bearer <MCP_SHARED_SECRET>` |
+| `X-KIMAI-USER` | Kimai username |
+| `X-KIMAI-TOKEN` | Kimai API token from user profile |
+
+If headers are omitted, the server falls back to `KIMAI_USERNAME` / `KIMAI_API_TOKEN` in its `.env` (single-user mode only).
+
+### Cursor config (each team member)
+
+Add to `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "kimai": {
+      "url": "https://mcp.yourcompany.com/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_TEAM_SECRET",
+        "X-KIMAI-USER": "your-kimai-username",
+        "X-KIMAI-TOKEN": "your-kimai-api-token"
+      }
+    }
+  }
+}
+```
+
+Restart MCP in Cursor after saving. Everyone hits the same URL; Kimai permissions follow each person's token.
+
+### systemd example
+
+```ini
+[Unit]
+Description=Kimai MCP HTTP Server
+After=network.target
+
+[Service]
+Type=simple
+User=kimai-mcp
+WorkingDirectory=/opt/kimai-mcp
+EnvironmentFile=/opt/kimai-mcp/.env
+ExecStart=/usr/bin/node /opt/kimai-mcp/dist/http-server.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+## Cursor (local stdio)
 
 Add a server entry pointing at the **built** entrypoint, for example in `~/.cursor/mcp.json`:
 
@@ -108,6 +189,25 @@ All tools return JSON text with **`{ status, body }`** where `status` is the HTT
 | `kimai_hive_update_project_budget` | Hive plugin: update project budget |
 
 Hive tools only work if the **Hive & GPTs** (or equivalent) plugin routes exist on your instance.
+
+### LHG Payroll tools
+
+Requires **LhgPayrollBundle** on your Kimai instance. See payroll routes in `doc.json` under **LHG Payroll API**.
+
+| Tool | Purpose |
+|------|---------|
+| `kimai_payroll_ping` | Plugin health check |
+| `kimai_payroll_statuses` | Approval status codes (1–6) |
+| `kimai_payroll_period` | Biweekly period start/end for a date |
+| `kimai_payroll_biweekly` | Full payroll data (timesheets, totals, approval) |
+| `kimai_payroll_queues` | Submitted / approved / not-submitted queues |
+| `kimai_payroll_users` | Users with hourly rates |
+| `kimai_payroll_users_accessible` | Users the caller can view payroll for |
+| `kimai_payroll_approvals_list` | List approvals (`status`, `start_date` filters) |
+| `kimai_payroll_approval_get` | Approval detail with timesheets and history |
+| `kimai_payroll_submit` | Submit biweekly period for approval |
+| `kimai_payroll_update_status` | Team lead or finance approve/reject |
+| `kimai_payroll_resubmit` | Re-submit after rejection |
 
 ## Date filters for `kimai_list_timesheets`
 

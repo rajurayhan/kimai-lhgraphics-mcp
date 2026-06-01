@@ -5,21 +5,26 @@
   "type": "module",
   "description": "MCP server for Kimai time tracking (REST API)",
   "bin": {
-    "kimai-mcp": "./dist/index.js"
+    "kimai-mcp": "./dist/index.js",
+    "kimai-mcp-http": "./dist/http-server.js"
   },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "node --import tsx src/index.ts"
+    "start:http": "node dist/http-server.js",
+    "dev": "node --import tsx src/index.ts",
+    "dev:http": "node --import tsx src/http-server.ts"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "express": "^5.2.1"
   },
   "devDependencies": {
+    "@types/express": "^5.0.0",
     "@types/node": "^22.10.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
