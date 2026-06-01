@@ -1,0 +1,3007 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Kimai - API Docs",
+    "description": "JSON API for the Kimai time-tracking software: [API documentation](https://www.kimai.org/documentation/rest-api.html), [Swagger definition file](doc.json)\n",
+    "version": "0.6"
+  },
+  "paths": {
+    "/api/ping": {
+      "get": {
+        "summary": "A testing route for the API",
+        "responses": {
+          "200": {
+            "description": "A simple route that returns a 'pong', which you can use for testing the API",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "pong"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Default"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/version": {
+      "get": {
+        "summary": "Returns information about the Kimai release",
+        "responses": {
+          "200": {
+            "description": "Returns version information about the current release",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Version"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Default"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/users/me": {
+      "get": {
+        "summary": "Return the current user entity",
+        "responses": {
+          "200": {
+            "description": "Return the current user entity.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserEntity"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/customers": {
+      "get": {
+        "summary": "Returns a collection of customers",
+        "parameters": [
+          {
+            "name": "visible",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Visibility status to filter activities (1=visible, 2=hidden, 3=both)",
+            "schema": {
+              "type": "string",
+              "pattern": "\\d+"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "The result order. Allowed values: ASC, DESC (default: ASC)",
+            "schema": {
+              "type": "string",
+              "pattern": "ASC|DESC"
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "The field by which results will be ordered. Allowed values: id, name (default: name)",
+            "schema": {
+              "type": "string",
+              "pattern": "id|name"
+            }
+          },
+          {
+            "name": "term",
+            "in": "query",
+            "allowEmptyValue": false,
+            "required": false,
+            "description": "Free search term",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a collection of customer entities",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerCollection"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Customer"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/projects": {
+      "get": {
+        "summary": "Returns a collection of projects.",
+        "parameters": [
+          {
+            "name": "customer",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Customer ID to filter projects",
+            "schema": {
+              "type": "string",
+              "pattern": "\\d+"
+            }
+          },
+          {
+            "name": "customers",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Comma separated list of customer IDs to filter projects",
+            "schema": {
+              "type": "string",
+              "pattern": "[\\d|,]+"
+            }
+          },
+          {
+            "name": "visible",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Visibility status to filter projects. Allowed values: 1=visible, 2=hidden, 3=both (default: 1)",
+            "schema": {
+              "type": "string",
+              "pattern": "\\d+"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Only projects that started before this date will be included. Allowed format: HTML5 (default: now, if end is also empty)",
+            "schema": {
+              "type": "string",
+              "format": "DateTime"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Only projects that ended after this date will be included. Allowed format: HTML5 (default: now, if start is also empty)",
+            "schema": {
+              "type": "string",
+              "format": "DateTime"
+            }
+          },
+          {
+            "name": "ignoreDates",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "If set, start and end are completely ignored. Allowed values: 1 (default: off)",
+            "schema": {
+              "type": "string",
+              "pattern": "1"
+            }
+          },
+          {
+            "name": "globalActivities",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "If given, filters projects by their 'global activity' support. Allowed values: 1 (supports global activities) and 0 (without global activities) (default: all)",
+            "schema": {
+              "type": "string",
+              "pattern": "0|1"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "The result order. Allowed values: ASC, DESC (default: ASC)",
+            "schema": {
+              "type": "string",
+              "pattern": "ASC|DESC"
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "The field by which results will be ordered. Allowed values: id, name, customer (default: name)",
+            "schema": {
+              "type": "string",
+              "pattern": "id|name|customer"
+            }
+          },
+          {
+            "name": "term",
+            "in": "query",
+            "allowEmptyValue": false,
+            "required": false,
+            "description": "Free search term",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a collection of project entities",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectCollection"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Project"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/activities": {
+      "get": {
+        "summary": "Returns a collection of activities",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Project ID to filter activities",
+            "schema": {
+              "type": "string",
+              "pattern": "\\d+"
+            }
+          },
+          {
+            "name": "projects",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Comma separated list of project IDs to filter activities",
+            "schema": {
+              "type": "string",
+              "pattern": "[\\d|,]+"
+            }
+          },
+          {
+            "name": "visible",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Visibility status to filter activities. Allowed values: 1=visible, 2=hidden, 3=all (default: 1)",
+            "schema": {
+              "type": "string",
+              "pattern": "1|2|3"
+            }
+          },
+          {
+            "name": "globals",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Use if you want to fetch only global activities. Allowed values: true (default: false)",
+            "schema": {
+              "type": "string",
+              "pattern": "true"
+            }
+          },
+          {
+            "name": "globalsFirst",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Deprecated parameter, value is not used any more",
+            "schema": {
+              "type": "string",
+              "pattern": "true|false"
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "The field by which results will be ordered. Allowed values: id, name, project (default: name)",
+            "schema": {
+              "type": "string",
+              "pattern": "id|name|project"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "The result order. Allowed values: ASC, DESC (default: ASC)",
+            "schema": {
+              "type": "string",
+              "pattern": "ASC|DESC"
+            }
+          },
+          {
+            "name": "term",
+            "in": "query",
+            "allowEmptyValue": false,
+            "required": false,
+            "description": "Free search term",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a collection of activity entities",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityCollection"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Activity"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/tags": {
+      "get": {
+        "summary": "Fetch all existing tags",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Search term to filter tag list",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the collection of all existing tags as string array",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/config/timesheet": {
+      "get": {
+        "summary": "Returns the timesheet configuration",
+        "responses": {
+          "200": {
+            "description": "Returns the instance specific timesheet configuration",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimesheetConfig"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Default"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/timesheets": {
+      "get": {
+        "summary": "Returns a collection of timesheet records",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "User ID to filter timesheets. Needs permission 'view_other_timesheet', pass 'all' to fetch data for all user (default: current user)",
+            "schema": {
+              "type": "string",
+              "pattern": "\\d+|all"
+            }
+          },
+          {
+            "name": "customer",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "DEPRECATED: Customer ID to filter timesheets (will be removed with 2.0)",
+            "schema": {
+              "type": "string",
+              "pattern": "\\d+"
+            }
+          },
+          {
+            "name": "customers",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Comma separated list of customer IDs to filter timesheets",
+            "schema": {
+              "type": "string",
+              "pattern": "[\\d|,]+"
+            }
+          },
+          {
+            "name": "project",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "DEPRECATED: Project ID to filter timesheets (will be removed with 2.0)",
+            "schema": {
+              "type": "string",
+              "pattern": "\\d+"
+            }
+          },
+          {
+            "name": "projects",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Comma separated list of project IDs to filter timesheets",
+            "schema": {
+              "type": "string",
+              "pattern": "[\\d|,]+"
+            }
+          },
+          {
+            "name": "activity",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "DEPRECATED: Activity ID to filter timesheets (will be removed with 2.0)",
+            "schema": {
+              "type": "string",
+              "pattern": "\\d+"
+            }
+          },
+          {
+            "name": "activities",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Comma separated list of activity IDs to filter timesheets",
+            "schema": {
+              "type": "string",
+              "pattern": "[\\d|,]+"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "The page to display, renders a 404 if not found (default: 1)",
+            "schema": {
+              "type": "string",
+              "pattern": "\\d+"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "The amount of entries for each page (default: 50)",
+            "schema": {
+              "type": "string",
+              "pattern": "\\d+"
+            }
+          },
+          {
+            "name": "tags",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Comma separated list of tag names",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "The field by which results will be ordered. Allowed values: id, begin, end, rate (default: begin)",
+            "schema": {
+              "type": "string",
+              "pattern": "id|begin|end|rate"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "The result order. Allowed values: ASC, DESC (default: DESC)",
+            "schema": {
+              "type": "string",
+              "pattern": "ASC|DESC"
+            }
+          },
+          {
+            "name": "begin",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Only records after this date will be included (format: HTML5)",
+            "schema": {
+              "type": "string",
+              "format": "DateTime"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Only records before this date will be included (format: HTML5)",
+            "schema": {
+              "type": "string",
+              "format": "DateTime"
+            }
+          },
+          {
+            "name": "exported",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Use this flag if you want to filter for export state. Allowed values: 0=not exported, 1=exported (default: all)",
+            "schema": {
+              "type": "string",
+              "pattern": "0|1"
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Filter for running/active records. Allowed values: 0=stopped, 1=active (default: all)",
+            "schema": {
+              "type": "string",
+              "pattern": "0|1"
+            }
+          },
+          {
+            "name": "billable",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Filter for non-/billable records. Allowed values: 0=non-billable, 1=billable (default: all)",
+            "schema": {
+              "type": "string",
+              "pattern": "0|1"
+            }
+          },
+          {
+            "name": "full",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Allows to fetch fully serialized objects including subresources. Allowed values: true (default: false)",
+            "schema": {
+              "type": "string",
+              "pattern": "true"
+            }
+          },
+          {
+            "name": "term",
+            "in": "query",
+            "allowEmptyValue": false,
+            "required": false,
+            "description": "Free search term",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified_after",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Only records changed after this date will be included (format: HTML5). Available since Kimai 1.10 and works only for records that were created/updated since then.",
+            "schema": {
+              "type": "string",
+              "format": "DateTime"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a collection of timesheets records. Be aware that the datetime fields are given in the users local time including the timezone offset via ISO 8601.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TimesheetCollection"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Timesheet"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Creates a new timesheet record",
+        "description": "Creates a new timesheet record for the current user and returns it afterwards.",
+        "parameters": [
+          {
+            "name": "full",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Allows to fetch fully serialized objects including subresources (TimesheetEntityExpanded). Allowed values: true (default: false)",
+            "schema": {
+              "type": "string",
+              "pattern": "true"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/TimesheetEditForm"
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the new created timesheet",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimesheetEntity"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Timesheet"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/timesheets/active": {
+      "get": {
+        "summary": "Returns the collection of active timesheet records",
+        "responses": {
+          "200": {
+            "description": "Returns the collection of active timesheet records for the current user",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TimesheetCollectionExpanded"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Timesheet"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/timesheets/recent": {
+      "get": {
+        "summary": "Returns the collection of recent user activities",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "User ID to filter timesheets. Needs permission 'view_other_timesheet', pass 'all' to fetch data for all user (default: current user)",
+            "schema": {
+              "type": "string",
+              "pattern": "\\d+|all"
+            }
+          },
+          {
+            "name": "begin",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "Only records after this date will be included. Default: today - 1 year (format: HTML5)",
+            "schema": {
+              "type": "string",
+              "format": "DateTime"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "allowEmptyValue": true,
+            "required": false,
+            "description": "The amount of entries (default: 10)",
+            "schema": {
+              "type": "string",
+              "pattern": "\\d+"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the collection of recent user activities (always the latest entry of a unique working set grouped by customer, project and activity)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TimesheetCollectionExpanded"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Timesheet"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/timesheets/{id}": {
+      "get": {
+        "summary": "Returns one timesheet record",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Timesheet record ID to fetch",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns one timesheet record. Be aware that the datetime fields are given in the users local time including the timezone offset via ISO 8601.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimesheetEntity"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Timesheet"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update an existing timesheet record",
+        "description": "Update an existing timesheet record, you can pass all or just a subset of the attributes.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Timesheet record ID to update",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/TimesheetEditForm"
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the updated timesheet",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimesheetEntity"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Timesheet"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete an existing timesheet record",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Timesheet record ID to delete",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Delete one timesheet record"
+          }
+        },
+        "tags": [
+          "Timesheet"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/timesheets/{id}/stop": {
+      "patch": {
+        "summary": "Stops an active timesheet record",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Timesheet record ID to stop",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stops an active timesheet record and returns it afterwards.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimesheetEntity"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Timesheet"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/timesheets/{id}/restart": {
+      "patch": {
+        "summary": "Restarts a previously stopped timesheet record for the current user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Timesheet record ID to restart",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "copy": {
+                    "description": "Whether data should be copied to the new entry. Allowed values: all, tags (deprecated), rates (deprecated), description (deprecated), meta (deprecated) (default: nothing is copied)",
+                    "type": "string",
+                    "pattern": "all|tags|rates|meta|description"
+                  },
+                  "begin": {
+                    "description": "Changes the restart date to the given one (default: now)",
+                    "type": "string",
+                    "format": "DateTime"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Restarts a timesheet record for the same customer, project, activity combination. The current user will be the owner of the new record. Kimai tries to stop running records, which is expected to fail depending on the configured rules. Data will be copied from the original record if requested.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimesheetEntity"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Timesheet"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/hive/timesheets": {
+      "post": {
+        "summary": "Creates a new timesheet entry",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "project",
+                  "activity"
+                ],
+                "properties": {
+                  "project": {
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "activity": {
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "begin": {
+                    "example": "2024-03-20 10:00:00",
+                    "type": "string",
+                    "format": "datetime"
+                  },
+                  "end": {
+                    "example": "2024-03-20 12:00:00",
+                    "type": "string",
+                    "format": "datetime"
+                  },
+                  "duration": {
+                    "example": 7200,
+                    "type": "integer"
+                  },
+                  "description": {
+                    "example": "Working on feature X",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Returns the created timesheet entry",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "properties": {
+                    "success": {
+                      "example": true,
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "example": "Timesheet created successfully",
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "id": {
+                          "example": 1,
+                          "type": "integer"
+                        },
+                        "begin": {
+                          "example": "2024-03-20 10:00:00",
+                          "type": "string",
+                          "format": "datetime"
+                        },
+                        "end": {
+                          "example": "2024-03-20 12:00:00",
+                          "type": "string",
+                          "format": "datetime"
+                        },
+                        "duration": {
+                          "example": 7200,
+                          "type": "integer"
+                        },
+                        "description": {
+                          "example": "Working on feature X",
+                          "type": "string"
+                        },
+                        "project": {
+                          "example": 1,
+                          "type": "integer"
+                        },
+                        "activity": {
+                          "example": 1,
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Returns error details",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "properties": {
+                    "success": {
+                      "example": false,
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "example": "Project ID is required",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Hive & GPTs API"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/hive/projects/{id}/budget": {
+      "get": {
+        "summary": "Get project budget settings",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Project ID",
+            "schema": {
+              "type": "integer",
+              "pattern": "\\d+"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns project budget data",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "properties": {
+                    "success": {
+                      "example": true,
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "properties": {
+                        "budgetType": {
+                          "type": "integer",
+                          "enum": [
+                            1,
+                            2
+                          ]
+                        },
+                        "budgetAmount": {
+                          "type": "number"
+                        },
+                        "recurringBudgetAmount": {
+                          "type": "number"
+                        },
+                        "interval": {
+                          "example": "P0Y1M0D",
+                          "type": "string"
+                        },
+                        "nextIntervalDate": {
+                          "type": "string",
+                          "format": "date"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Hive & GPTs API"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "put": {
+        "summary": "Updates project budget settings",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Project ID",
+            "schema": {
+              "type": "integer",
+              "pattern": "\\d+"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "budgetType",
+                  "budgetAmount"
+                ],
+                "properties": {
+                  "budgetType": {
+                    "type": "integer",
+                    "enum": [
+                      1,
+                      2
+                    ]
+                  },
+                  "budgetAmount": {
+                    "type": "number"
+                  },
+                  "recurringBudgetAmount": {
+                    "description": "Optional. Defaults to budgetAmount if not provided",
+                    "type": "number"
+                  },
+                  "interval": {
+                    "description": "Optional. Defaults to P0Y1M0D",
+                    "example": "P0Y1M0D",
+                    "type": "string"
+                  },
+                  "nextIntervalDate": {
+                    "description": "Optional. Defaults to current date",
+                    "type": "string",
+                    "format": "date"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the updated project budget data",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "properties": {
+                    "success": {
+                      "example": true,
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "example": "Project budget updated successfully",
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "budgetType": {
+                          "type": "string",
+                          "enum": [
+                            "MONEY",
+                            "TIME"
+                          ]
+                        },
+                        "budgetType_value": {
+                          "type": "integer",
+                          "enum": [
+                            1,
+                            2
+                          ]
+                        },
+                        "budgetAmount": {
+                          "type": "number"
+                        },
+                        "recurringBudgetAmount": {
+                          "type": "number"
+                        },
+                        "interval": {
+                          "example": "P0Y1M0D",
+                          "type": "string"
+                        },
+                        "nextIntervalDate": {
+                          "type": "string",
+                          "format": "date"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Hive & GPTs API"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/payroll/ping": {
+      "get": {
+        "summary": "Health check for the payroll plugin API",
+        "responses": {
+          "200": {
+            "description": "Plugin API is reachable",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": 200,
+                      "type": "integer"
+                    },
+                    "data": {
+                      "properties": {
+                        "status": {
+                          "example": "ok",
+                          "type": "string"
+                        },
+                        "plugin": {
+                          "example": "LhgPayrollBundle",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LHG Payroll API"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/payroll/statuses": {
+      "get": {
+        "summary": "Returns payroll approval status codes",
+        "responses": {
+          "200": {
+            "description": "List of status values and names",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": 200,
+                      "type": "integer"
+                    },
+                    "data": {
+                      "properties": {
+                        "statuses": {
+                          "items": {
+                            "properties": {
+                              "value": {
+                                "example": 1,
+                                "type": "integer"
+                              },
+                              "name": {
+                                "example": "PENDING",
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LHG Payroll API"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/payroll/period": {
+      "get": {
+        "summary": "Returns biweekly period start and end for a reference date",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "Reference date (Y-m-d), defaults to today",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Biweekly period boundaries",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": 200,
+                      "type": "integer"
+                    },
+                    "data": {
+                      "properties": {
+                        "period": {
+                          "properties": {
+                            "selectedDate": {
+                              "example": "2026-06-01",
+                              "type": "string"
+                            },
+                            "start": {
+                              "example": "2026-05-18",
+                              "type": "string"
+                            },
+                            "end": {
+                              "example": "2026-05-31",
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LHG Payroll API"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/payroll/biweekly": {
+      "get": {
+        "summary": "Returns biweekly payroll data for a user",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "Reference date (Y-m-d)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "description": "Target user ID (team lead / super admin only; omit for self)",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Biweekly payroll detail",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Response body."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        },
+        "tags": [
+          "LHG Payroll API"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/payroll/queues": {
+      "get": {
+        "summary": "Returns approval queues for the biweekly period",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "Reference date (Y-m-d)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Submitted, approved, and not-submitted lists",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Response body."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        },
+        "tags": [
+          "LHG Payroll API"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/payroll/users": {
+      "get": {
+        "summary": "Returns users with non-zero hourly rates",
+        "responses": {
+          "200": {
+            "description": "Users with hourly rates",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": 200,
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "items": {
+                        "properties": {
+                          "id": {
+                            "example": 1,
+                            "type": "integer"
+                          },
+                          "username": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "hourly_rate": {
+                            "example": "75.00",
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LHG Payroll API"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/payroll/users/accessible": {
+      "get": {
+        "summary": "Returns users the current actor may view payroll for",
+        "responses": {
+          "200": {
+            "description": "Accessible users (self, team, or all)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": 200,
+                      "type": "integer"
+                    },
+                    "data": {
+                      "properties": {
+                        "users": {
+                          "items": {
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "username": {
+                                "type": "string"
+                              },
+                              "alias": {
+                                "type": "string"
+                              },
+                              "email": {
+                                "type": "string"
+                              },
+                              "hourly_rate": {
+                                "type": "string"
+                              },
+                              "salary": {
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LHG Payroll API"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/payroll/approvals": {
+      "get": {
+        "summary": "Lists payroll approvals visible to the current user",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "description": "Period start Y-m-d",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of approvals",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Response body."
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LHG Payroll API"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Submits a biweekly payroll period for approval",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "userId",
+                  "startDate",
+                  "endDate"
+                ],
+                "properties": {
+                  "userId": {
+                    "example": 5,
+                    "type": "integer"
+                  },
+                  "startDate": {
+                    "example": "2026-05-18",
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "endDate": {
+                    "example": "2026-05-31",
+                    "type": "string",
+                    "format": "date"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Approval submitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Response body."
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate approval"
+          }
+        },
+        "tags": [
+          "LHG Payroll API"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/payroll/approvals/{id}": {
+      "get": {
+        "summary": "Returns approval detail with timesheets and history",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Approval ID",
+            "schema": {
+              "type": "integer",
+              "pattern": "\\d+"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Approval detail",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Response body."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "tags": [
+          "LHG Payroll API"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/payroll/approvals/{id}/status": {
+      "post": {
+        "summary": "Updates approval status (team lead or finance approve/reject)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Approval ID",
+            "schema": {
+              "type": "integer",
+              "pattern": "\\d+"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "description": "StatusEnum value",
+                    "example": 2,
+                    "type": "integer"
+                  },
+                  "message": {
+                    "example": "Approved",
+                    "type": "string"
+                  },
+                  "commission": {
+                    "example": 0,
+                    "type": "number"
+                  },
+                  "adjustment": {
+                    "example": 50,
+                    "type": "number"
+                  },
+                  "deduction": {
+                    "example": 0,
+                    "type": "number"
+                  },
+                  "netPayable": {
+                    "example": 1250.5,
+                    "type": "number"
+                  },
+                  "paymentMethod": {
+                    "example": "Wise",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Status updated",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Response body."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        },
+        "tags": [
+          "LHG Payroll API"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    },
+    "/api/payroll/approvals/{id}/resubmit": {
+      "post": {
+        "summary": "Re-submits a rejected payroll approval",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Approval ID",
+            "schema": {
+              "type": "integer",
+              "pattern": "\\d+"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Approval re-submitted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Response body."
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "LHG Payroll API"
+        ],
+        "security": [
+          {
+            "apiUser": []
+          },
+          {
+            "apiToken": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "requestBodies": {
+      "TimesheetEditForm": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/TimesheetEditForm"
+            }
+          }
+        },
+        "required": true
+      }
+    },
+    "securitySchemes": {
+      "apiUser": {
+        "name": "X-AUTH-USER",
+        "type": "apiKey",
+        "in": "header",
+        "description": "Value: {Username}"
+      },
+      "apiToken": {
+        "name": "X-AUTH-TOKEN",
+        "type": "apiKey",
+        "in": "header",
+        "description": "Value: {API Token}"
+      }
+    },
+    "schemas": {
+      "ActivityCollection": {
+        "required": [
+          "name",
+          "visible",
+          "billable"
+        ],
+        "properties": {
+          "parentTitle": {
+            "type": "string"
+          },
+          "project": {
+            "type": "integer"
+          },
+          "id": {
+            "title": "Internal ID",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name of this activity",
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2
+          },
+          "comment": {
+            "title": "Description of this activity",
+            "type": "string"
+          },
+          "visible": {
+            "title": "Whether this activity is visible and can be used for timesheets",
+            "type": "boolean"
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "metaFields": {
+            "title": "Meta fields",
+            "description": "All visible meta (custom) fields registered with this activity",
+            "items": {
+              "$ref": "#/components/schemas/ActivityMeta"
+            },
+            "type": "array"
+          },
+          "teams": {
+            "title": "Teams",
+            "description": "If no team is assigned, everyone can access the activity",
+            "items": {
+              "$ref": "#/components/schemas/Team"
+            },
+            "type": "array"
+          },
+          "color": {
+            "title": "The assigned color in HTML hex format, eg. #dd1d00",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ActivityExpanded": {
+        "required": [
+          "name",
+          "visible",
+          "billable"
+        ],
+        "properties": {
+          "id": {
+            "title": "Internal ID",
+            "type": "integer"
+          },
+          "project": {
+            "$ref": "#/components/schemas/Project"
+          },
+          "name": {
+            "title": "Name of this activity",
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2
+          },
+          "comment": {
+            "title": "Description of this activity",
+            "type": "string"
+          },
+          "visible": {
+            "title": "Whether this activity is visible and can be used for timesheets",
+            "type": "boolean"
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "color": {
+            "title": "The assigned color in HTML hex format, eg. #dd1d00",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ActivityMeta": {
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "title": "Name of the meta (custom) field",
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 2
+          },
+          "value": {
+            "title": "Value of the meta (custom) field",
+            "type": "string",
+            "maxLength": 65535
+          }
+        },
+        "type": "object"
+      },
+      "Customer": {
+        "required": [
+          "name",
+          "visible",
+          "billable"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2
+          },
+          "number": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "comment": {
+            "type": "string"
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "color": {
+            "title": "The assigned color in HTML hex format, eg. #dd1d00",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CustomerCollection": {
+        "required": [
+          "name",
+          "visible",
+          "billable",
+          "currency"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2
+          },
+          "number": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "comment": {
+            "type": "string"
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 3
+          },
+          "metaFields": {
+            "title": "Meta fields",
+            "description": "All visible meta (custom) fields registered with this customer",
+            "items": {
+              "$ref": "#/components/schemas/CustomerMeta"
+            },
+            "type": "array"
+          },
+          "teams": {
+            "title": "Teams",
+            "description": "If no team is assigned, everyone can access the customer",
+            "items": {
+              "$ref": "#/components/schemas/Team"
+            },
+            "type": "array"
+          },
+          "color": {
+            "title": "The assigned color in HTML hex format, eg. #dd1d00",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CustomerMeta": {
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "title": "Name of the meta (custom) field",
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 2
+          },
+          "value": {
+            "title": "Value of the meta (custom) field",
+            "type": "string",
+            "maxLength": 65535
+          }
+        },
+        "type": "object"
+      },
+      "Project": {
+        "required": [
+          "name",
+          "visible",
+          "billable",
+          "globalActivities"
+        ],
+        "properties": {
+          "customer": {
+            "type": "integer"
+          },
+          "id": {
+            "title": "Internal ID",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Project name",
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2
+          },
+          "comment": {
+            "type": "string"
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "globalActivities": {
+            "title": "Whether this project allows booking of global activities",
+            "type": "boolean"
+          },
+          "color": {
+            "title": "The assigned color in HTML hex format, eg. #dd1d00",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectCollection": {
+        "required": [
+          "name",
+          "visible",
+          "billable",
+          "globalActivities"
+        ],
+        "properties": {
+          "parentTitle": {
+            "type": "string"
+          },
+          "customer": {
+            "type": "integer"
+          },
+          "id": {
+            "title": "Internal ID",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Project name",
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "metaFields": {
+            "title": "Meta fields",
+            "description": "All visible meta (custom) fields registered with this project",
+            "items": {
+              "$ref": "#/components/schemas/ProjectMeta"
+            },
+            "type": "array"
+          },
+          "teams": {
+            "title": "Teams",
+            "description": "If no team is assigned, everyone can access the project (also depends on the teams of the customer)",
+            "items": {
+              "$ref": "#/components/schemas/Team"
+            },
+            "type": "array"
+          },
+          "globalActivities": {
+            "title": "Whether this project allows booking of global activities",
+            "type": "boolean"
+          },
+          "color": {
+            "title": "The assigned color in HTML hex format, eg. #dd1d00",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectExpanded": {
+        "required": [
+          "customer",
+          "name",
+          "visible",
+          "billable",
+          "globalActivities"
+        ],
+        "properties": {
+          "id": {
+            "title": "Internal ID",
+            "type": "integer"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/Customer"
+          },
+          "name": {
+            "title": "Project name",
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2
+          },
+          "comment": {
+            "type": "string"
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "globalActivities": {
+            "title": "Whether this project allows booking of global activities",
+            "type": "boolean"
+          },
+          "color": {
+            "title": "The assigned color in HTML hex format, eg. #dd1d00",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectMeta": {
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "title": "Name of the meta (custom) field",
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 2
+          },
+          "value": {
+            "title": "Value of the meta (custom) field",
+            "type": "string",
+            "maxLength": 65535
+          }
+        },
+        "type": "object"
+      },
+      "Team": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string",
+            "description": "HTML hex color, e.g. #dd1d00"
+          }
+        }
+      },
+      "TeamMembership": {
+        "required": [
+          "team",
+          "teamlead"
+        ],
+        "properties": {
+          "team": {
+            "$ref": "#/components/schemas/Team"
+          },
+          "teamlead": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "TimesheetCollection": {
+        "required": [
+          "begin",
+          "exported",
+          "billable"
+        ],
+        "properties": {
+          "activity": {
+            "type": "integer"
+          },
+          "project": {
+            "type": "integer"
+          },
+          "user": {
+            "type": "integer"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "begin": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "duration": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "rate": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0
+          },
+          "internalRate": {
+            "type": "number",
+            "format": "float"
+          },
+          "exported": {
+            "type": "boolean"
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "metaFields": {
+            "title": "Meta fields",
+            "description": "All visible meta (custom) fields registered with this timesheet",
+            "items": {
+              "$ref": "#/components/schemas/TimesheetMeta"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "TimesheetCollectionExpanded": {
+        "required": [
+          "begin",
+          "activity",
+          "project",
+          "exported",
+          "billable"
+        ],
+        "properties": {
+          "user": {
+            "type": "integer"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "begin": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "duration": {
+            "type": "integer"
+          },
+          "activity": {
+            "$ref": "#/components/schemas/ActivityExpanded"
+          },
+          "project": {
+            "$ref": "#/components/schemas/ProjectExpanded"
+          },
+          "description": {
+            "type": "string"
+          },
+          "rate": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0
+          },
+          "internalRate": {
+            "type": "number",
+            "format": "float"
+          },
+          "exported": {
+            "type": "boolean"
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "metaFields": {
+            "title": "Meta fields",
+            "description": "All visible meta (custom) fields registered with this timesheet",
+            "items": {
+              "$ref": "#/components/schemas/TimesheetMeta"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "TimesheetConfig": {
+        "properties": {
+          "trackingMode": {
+            "title": "The time-tracking mode, see also: https://www.kimai.org/documentation/timesheet.html#tracking-modes",
+            "type": "string"
+          },
+          "defaultBeginTime": {
+            "title": "Default begin datetime in PHP format",
+            "type": "string"
+          },
+          "activeEntriesHardLimit": {
+            "title": "How many running timesheets a user is allowed to have at the same time",
+            "type": "integer"
+          },
+          "activeEntriesSoftLimit": {
+            "title": "How many running timesheets a user is allowed before a warning is shown",
+            "type": "integer"
+          },
+          "isAllowFutureTimes": {
+            "title": "Whether entries for future times are allowed",
+            "type": "boolean"
+          },
+          "isAllowOverlapping": {
+            "title": "Whether overlapping entries are allowed",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "TimesheetEditForm": {
+        "required": [
+          "begin",
+          "project",
+          "activity"
+        ],
+        "properties": {
+          "begin": {
+            "example": "2026-06-01T08:17:28",
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "example": "2026-06-01T08:17:28",
+            "type": "string",
+            "format": "date-time"
+          },
+          "project": {
+            "description": "Project ID",
+            "type": "integer"
+          },
+          "activity": {
+            "description": "Activity ID",
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "fixedRate": {
+            "description": "Fixed rate",
+            "type": "number"
+          },
+          "hourlyRate": {
+            "description": "Hourly rate",
+            "type": "number"
+          },
+          "user": {
+            "description": "User ID",
+            "type": "integer"
+          },
+          "exported": {
+            "type": "boolean"
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "tags": {
+            "description": "Comma separated list of tags",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TimesheetEntity": {
+        "required": [
+          "begin",
+          "exported",
+          "billable"
+        ],
+        "properties": {
+          "activity": {
+            "type": "integer"
+          },
+          "project": {
+            "type": "integer"
+          },
+          "user": {
+            "type": "integer"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "begin": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "duration": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "rate": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0
+          },
+          "internalRate": {
+            "type": "number",
+            "format": "float"
+          },
+          "fixedRate": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0
+          },
+          "hourlyRate": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0
+          },
+          "exported": {
+            "type": "boolean"
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "metaFields": {
+            "title": "Meta fields",
+            "description": "All visible meta (custom) fields registered with this timesheet",
+            "items": {
+              "$ref": "#/components/schemas/TimesheetMeta"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "TimesheetMeta": {
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "title": "Name of the meta (custom) field",
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 2
+          },
+          "value": {
+            "title": "Value of the meta (custom) field",
+            "type": "string",
+            "maxLength": 65535
+          }
+        },
+        "type": "object"
+      },
+      "UserEntity": {
+        "required": [
+          "memberships",
+          "username"
+        ],
+        "properties": {
+          "language": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "preferences": {
+            "title": "Read-only list of of all visible user preferences.",
+            "items": {
+              "$ref": "#/components/schemas/UserPreference"
+            },
+            "type": "array"
+          },
+          "teams": {
+            "title": "List of all teams, this user is part of",
+            "items": {
+              "$ref": "#/components/schemas/Team"
+            },
+            "type": "array"
+          },
+          "id": {
+            "title": "Internal ID",
+            "type": "integer"
+          },
+          "alias": {
+            "title": "The user alias will be displayed in the frontend instead of the username",
+            "type": "string",
+            "maxLength": 60
+          },
+          "title": {
+            "title": "An additional title for the user, like the Job position or Department",
+            "type": "string",
+            "maxLength": 50
+          },
+          "avatar": {
+            "title": "URL to the user avatar, will be auto-generated if empty",
+            "type": "string",
+            "maxLength": 255
+          },
+          "memberships": {
+            "$ref": "#/components/schemas/TeamMembership"
+          },
+          "username": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 2
+          },
+          "accountNumber": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "roles": {
+            "title": "List of all role names",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "color": {
+            "title": "The assigned color in HTML hex format, eg. #dd1d00",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UserPreference": {
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 2
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Version": {
+        "properties": {
+          "version": {
+            "title": "Kimai Version, eg. \"1.14\"",
+            "type": "string"
+          },
+          "versionId": {
+            "title": "Kimai Version as integer, eg. 11400",
+            "description": "Follows the same logic as PHP_VERSION_ID, see https://www.php.net/manual/de/function.phpversion.php",
+            "type": "integer"
+          },
+          "candidate": {
+            "title": "Candidate: either \"prod\" or \"dev\"",
+            "type": "string"
+          },
+          "semver": {
+            "title": "Full version including status, eg: \"1.9-prod\"",
+            "type": "string"
+          },
+          "name": {
+            "title": "The version name",
+            "type": "string"
+          },
+          "copyright": {
+            "title": "A full copyright notice",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ]
+}

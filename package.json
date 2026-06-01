@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "build:api-docs": "node scripts/build-mcp-tools-api-docs.mjs",
     "start": "node dist/index.js",
     "start:http": "node dist/http-server.js",
     "dev": "node --import tsx src/index.ts",
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.0",
+    "swagger2openapi": "^7.0.8",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   }
